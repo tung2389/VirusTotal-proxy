@@ -2,7 +2,6 @@ const express = require('express')
 const multer  = require('multer')
 const FormData = require('form-data')
 const fetch = require('node-fetch');
-const Readable = require('stream').Readable;
 require('dotenv').config()
 
 const storage = multer.memoryStorage();
