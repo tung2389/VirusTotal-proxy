@@ -35,6 +35,7 @@ app.post("/files", upload.single('file'), async (req, res) => {
 app.get('/analyses/:id', async (req, res) => {
     const id = req.params.id;
     const response = await fetch(`https://www.virustotal.com/api/v3/analyses/${id}`, {
+        method: 'GET',
         headers: {
             'x-apikey': process.env.API_KEY
         }
@@ -44,8 +45,39 @@ app.get('/analyses/:id', async (req, res) => {
     res.send(data);
 })
 
-app.get("/files/upload_url", () => {
+app.get("/files/upload_url", async (req, res) => {
+    const response = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
+        method: 'GET',
+        headers: {
+            'x-apikey': process.env.API_KEY
+        }
+    })
+
+    const data = await response.json();
+    res.send(data);
+})
+
+app.post("/bigfiles", upload.single('file'), async (req, res) => {
+    const upload_url = req.body.upload_url;
     
+    const form = new FormData();
+    form.append('file', req.file.buffer, {
+        filename: req.file.originalname,
+    });
+
+    console.log(upload_url);
+    console.log(req.file);
+    
+    const response = await fetch(upload_url, {
+        method: 'POST',
+        headers: {
+            'x-apikey': process.env.API_KEY
+        },
+        body: form
+    })
+    
+    const data = await response.json();
+    res.send(data);
 })
 
 app.listen(PORT, function() {
