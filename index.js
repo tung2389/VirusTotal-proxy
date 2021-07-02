@@ -14,6 +14,19 @@ const app = express()
 
 const PORT = process.env.PORT || 3001
 
+app.get("/files/:id", async (req, res) => {{
+    const id = req.params.id;
+    const response = await fetch(`https://www.virustotal.com/api/v3/files/${id}`, {
+        method: 'GET',
+        headers: {
+            'x-apikey': process.env.API_KEY
+        }
+    });
+    
+    const fileInfo = await response.json();
+    res.send(fileInfo.data.attributes.last_analysis_stats);
+}})
+
 app.post("/files", upload.single('file'), async (req, res) => {
     const form = new FormData();
     form.append('file', req.file.buffer, {
