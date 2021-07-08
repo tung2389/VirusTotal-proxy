@@ -1,5 +1,6 @@
 const express = require('express')
 const multer  = require('multer')
+const zlib = require('zlib');
 const FormData = require('form-data')
 const fetch = require('node-fetch');
 require('dotenv').config()
@@ -14,6 +15,10 @@ const app = express()
 
 const PORT = process.env.PORT || 3001
 
+app.get("/", (req, res) => {
+    res.send("Hello")
+})
+
 app.get("/files/:id", async (req, res) => {{
     const id = req.params.id;
     const response = await fetch(`https://www.virustotal.com/api/v3/files/${id}`, {
@@ -24,7 +29,9 @@ app.get("/files/:id", async (req, res) => {{
     });
     
     const fileInfo = await response.json();
-    res.send(fileInfo.data.attributes.last_analysis_stats);
+    let resData = fileInfo.data.attributes.last_analysis_stats;
+    resData.md5 = fileInfo.data.attributes.md5;
+    res.send(resData);
 }})
 
 app.post("/files", upload.single('file'), async (req, res) => {
@@ -91,6 +98,17 @@ app.post("/bigfiles", upload.single('file'), async (req, res) => {
     
     const data = await response.json();
     res.send(data);
+})
+
+app.get("/QRCode", (req, res) => {
+    const payload = req.query.payload;
+    const zipBuffer = Buffer.from(payload, 'base64')
+
+    zlib.gunzip(zipBuffer, (error, unzipBuffer) => {
+        const jsonStr = unzipBuffer.toString();
+        const data = JSON.parse(jsonStr);
+        res.send(data);
+    });
 })
 
 app.listen(PORT, function() {
